@@ -1,10 +1,8 @@
 // src/app/page.tsx
-import StrategyCoreShell from "@/components/StrategyCoreShell";
-
 export default function Home() {
   return (
-    <main className="w-screen h-screen overflow-hidden bg-black">
-      <StrategyCoreShell />
+    <main className="flex min-h-screen items-center justify-center bg-black text-white">
+      <h1 className="text-2xl font-mono">🧠 Tex is thinking...</h1>
     </main>
   );
 }
