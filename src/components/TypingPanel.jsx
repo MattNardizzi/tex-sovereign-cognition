@@ -20,16 +20,16 @@ export default function TypingPanel() {
   };
 
   return (
-    <div className="w-full text-center mt-10">
+    <div className="w-full flex flex-col items-center justify-center mt-20 px-4 text-white">
       <input
-        className="text-black p-2 rounded-md w-[60%] max-w-md"
-        placeholder="Ask Tex something..."
         value={inputText}
         onChange={(e) => setInputText(e.target.value)}
         onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+        placeholder="Ask Tex something..."
+        className="p-3 rounded-md bg-black text-white border border-gray-600 w-full max-w-md"
       />
 
-      <div className="mt-6 text-white text-xl">
+      <div className="mt-6 text-xl text-center">
         {loading ? "🧠 Tex is thinking..." : texReply}
       </div>
     </div>
