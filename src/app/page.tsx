@@ -1,8 +1,8 @@
 import TypingPanel from "@/components/TypingPanel";
 
-export default function Home() {
+export default function Page() {
   return (
-    <main className="bg-black min-h-screen flex items-center justify-center">
+    <main>
       <TypingPanel />
     </main>
   );
