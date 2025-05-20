@@ -1,8 +1,9 @@
-// src/app/page.tsx
+import TypingPanel from "@/components/TypingPanel";
+
 export default function Home() {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-black text-white">
-      <h1 className="text-2xl font-mono">🧠 Tex is thinking...</h1>
+    <main className="bg-black min-h-screen flex items-center justify-center">
+      <TypingPanel />
     </main>
   );
 }
