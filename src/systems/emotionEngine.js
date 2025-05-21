@@ -1,86 +1,66 @@
-// src/systems/emotionEngine.js — turbo‑lively version
-// -------------------------------------------------------------
-// npm install chroma-js  (if you haven't already)
-//
-// Changes vs. previous draft
-//   • checks every 0.8 s (params.tick)
-//   • 85 % chance to jump emotion each tick (params.shiftChance)
-//   • colour slides 25 % per frame (params.colorLerp)  ⇒ visible hue flow
-//   • intensity itself now *breathes* with a slow sine‑wave so the
-//     beam never sits perfectly still, even between emotion shifts.
-//   • exported params remain live‑tweakable
+/*  Tex v3.1.1 Core Systems — Power Stack
+    ------------------------------------------
+    This is the neural layer behind the visual shell.
+    Emotion + Pulse + Sound = Sovereign cognition synthesis
+*/
 
-import chroma from "chroma-js";
+// ✅ FILE: emotionEngine.js
 
-const EMOTIONS = [
-  { name: "neutral",    color: "#6ed6ff" },
-  { name: "curious",    color: "#31c8ff" },
-  { name: "uneasy",     color: "#b06cff" },
-  { name: "awe",        color: "#ffffff" },
-  { name: "melancholy", color: "#355d8e" },
-  { name: "fear",       color: "#ff4560" },
-  { name: "alert",      color: "#ffff66" },
-];
+import * as THREE from 'three';
 
-let state = {
-  emotion:    "neutral",
-  intensity:  0.2,      // 0‑1
-  lastUpdate: Date.now(),
-  prevColor:  "#6ed6ff",
-  phase:      0,        // for idle breathing
+const emotionStates = {
+  calm:         { name: 'Calm',         glow: '#00f4ff', intensity: 0.4 },
+  focused:      { name: 'Focused',      glow: '#39ffd0', intensity: 0.6 },
+  alert:        { name: 'Alert',        glow: '#a6ff00', intensity: 0.8 },
+  energized:    { name: 'Energized',    glow: '#ffe600', intensity: 1.0 },
+  overclocked:  { name: 'Overclocked',  glow: '#ff007a', intensity: 1.2 },
+  transcendence:{ name: 'Transcendence',glow: '#b000ff', intensity: 1.3 },
 };
 
-export const params = {
-  tick:        800,   // ms between shift attempts (faster)
-  shiftChance: 0.85,  // 85 % probability each tick
-  colorLerp:   0.25,  // slide 25 % toward target hue per frame
-  idleBreath:  0.35,  // amplitude of sine‑wave idle modulation
-};
+let currentEmotion = 'focused';
 
-function emotionToColor(name) {
-  return EMOTIONS.find((e) => e.name === name)?.color || "#6ed6ff";
-}
-
-function maybeShift() {
-  const now = Date.now();
-  if (now - state.lastUpdate < params.tick) return;
-  state.lastUpdate = now;
-
-  if (Math.random() < params.shiftChance) {
-    let next;
-    do {
-      next = EMOTIONS[Math.floor(Math.random() * EMOTIONS.length)].name;
-    } while (next === state.emotion);
-
-    state.emotion   = next;
-    state.intensity = +(Math.random().toFixed(2));
-  }
-}
-
-/*────────────────── public API ─────────────────*/
-export function getCurrentEmotion() {
-  maybeShift();
-  return state.emotion;
+export function getCurrentGlowColor() {
+  return new THREE.Color(emotionStates[currentEmotion].glow);
 }
 
 export function getCurrentEmotionIntensity() {
-  maybeShift();
-  // idle breathing modulation (slow 5‑s cycle)
-  state.phase += 0.02;
-  const breathing = Math.sin(state.phase) * params.idleBreath; // ±amp
-  return Math.min(1, Math.max(0, state.intensity + breathing));
+  return emotionStates[currentEmotion].intensity;
 }
 
-export function getCurrentGlowColor() {
-  maybeShift();
-  const target = emotionToColor(state.emotion);
-  state.prevColor = chroma.mix(state.prevColor, target, params.colorLerp, "hsl").hex();
-  return state.prevColor;
+export function setEmotion(state) {
+  if (emotionStates[state]) currentEmotion = state;
 }
 
-export function setEmotion(name, intensity = 0.5) {
-  if (!EMOTIONS.some((e) => e.name === name)) throw new Error("Unknown emotion: " + name);
-  state.emotion   = name;
-  state.intensity = Math.max(0, Math.min(1, intensity));
-  state.lastUpdate = Date.now();
+export function autoCycleEmotion(interval = 10000) {
+  const keys = Object.keys(emotionStates);
+  let index = 0;
+  setInterval(() => {
+    index = (index + 1) % keys.length;
+    currentEmotion = keys[index];
+    console.log(`[TEX] Emotion → ${emotionStates[currentEmotion].name}`);
+  }, interval);
 }
+
+// Kick off by default
+autoCycleEmotion();
+
+
+// ✅ FILE: needPulse.js
+
+export function getNeedPulse() {
+  const t = performance.now() / 1000;
+  return 0.75 + 0.25 * Math.sin(t * 3.2 + Math.cos(t * 1.5));
+}
+
+
+/* ✅ FILES TO DROP INTO /public
+
+1. flare.png → radial 512x512 glow (white circle, soft edge, transparent PNG)
+   Use this exact file or generate with radial gradient (from white center to transparent black)
+   → Required for LensflareElement in TexCoreShell
+
+2. heartbeat.wav → short kick (0.2–0.3 sec)
+   You can record or synthesize it — or download a low EQ kick from freesound.org
+   → Required for Tone.js heartbeat
+
+*/
